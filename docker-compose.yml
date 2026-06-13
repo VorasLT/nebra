@@ -1,0 +1,43 @@
+version: "2.4"
+
+services:
+  chromium-flasher:
+    image: lscr.io/linuxserver/chromium:arm64v8-latest
+    privileged: true
+    shm_size: "1gb"
+    labels:
+      io.balena.features.sysfs: "1"
+      io.balena.features.procfs: "1"
+      io.balena.features.kernel-modules: "1"
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Europe/Vilnius
+      - CUSTOM_USER=admin
+      - PASSWORD=change_me
+      - CHROME_CLI=--no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB https://flasher.meshcore.co.uk/
+      - PIXELFLUX_WAYLAND=false
+    ports:
+      - "3001:3001"
+    volumes:
+      - chromium-config:/config
+    restart: unless-stopped
+
+  serial-tools:
+    build:
+      context: ./serial-tools
+    privileged: true
+    labels:
+      io.balena.features.sysfs: "1"
+      io.balena.features.procfs: "1"
+      io.balena.features.kernel-modules: "1"
+    ports:
+      - "7681:7681"
+    volumes:
+      - serial-data:/data
+    command: ttyd -W -p 7681 bash
+    restart: unless-stopped
+
+volumes:
+  chromium-config:
+  serial-data:

@@ -1,0 +1,20 @@
+.DS_Store
+Thumbs.db
+
+# Local environment files
+.env
+*.local
+
+# Balena and build artifacts
+node_modules/
+build/
+dist/
+tmp/
+temp/
+*.log
+
+# Firmware files can be copied into the serial-tools /data volume at runtime.
+*.bin
+*.uf2
+*.hex
+*.elf
