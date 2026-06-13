@@ -2,7 +2,8 @@ version: "2.4"
 
 services:
   chromium-flasher:
-    image: lscr.io/linuxserver/chromium:arm64v8-latest
+    build:
+      context: ./chromium-flasher
     privileged: true
     shm_size: "1gb"
     labels:
@@ -13,29 +14,12 @@ services:
       - PUID=0
       - PGID=0
       - TZ=Europe/Vilnius
-      - CUSTOM_USER=admin
-      - PASSWORD=change_me
-      - START_DOCKER=false
-      - CHROME_CLI=--no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB https://flasher.meshcore.co.uk/
-      - PIXELFLUX_WAYLAND=false
-      - NO_DECOR=true
-      - NO_GAMEPAD=true
-      - DISABLE_IPV6=true
-      - MAX_RES=1024x768
-      - SELKIES_MANUAL_WIDTH=1024
-      - SELKIES_MANUAL_HEIGHT=768
-      - SELKIES_FRAMERATE=8
-      - SELKIES_ENCODER=jpeg
-      - SELKIES_JPEG_QUALITY=45
-      - SELKIES_PAINT_OVER_JPEG_QUALITY=35
-      - SELKIES_AUDIO_ENABLED=false
-      - SELKIES_MICROPHONE_ENABLED=false
-      - SELKIES_GAMEPAD_ENABLED=false
-      - SELKIES_CLIPBOARD_ENABLED=false
-      - SELKIES_FILE_TRANSFERS=none
-      - SELKIES_SECOND_SCREEN=false
-      - SELKIES_USE_BROWSER_CURSORS=true
-      - SELKIES_USE_CSS_SCALING=true
+      - PASSWORD=changeme
+      - DISPLAY_WIDTH=1024
+      - DISPLAY_HEIGHT=768
+      - DISPLAY_DEPTH=16
+      - START_URL=https://flasher.meshcore.co.uk/
+      - CHROME_CLI=--no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --no-first-run --start-maximized --window-size=1024,768 --ozone-platform=x11 https://flasher.meshcore.co.uk/
     ports:
       - "3001:3001"
     volumes:

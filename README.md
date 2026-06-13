@@ -31,23 +31,29 @@ The Chromium container uses HTTPS on port 3001. A browser certificate warning is
 
 ### chromium-flasher
 
-Uses `lscr.io/linuxserver/chromium:arm64v8-latest` for a browser UI reachable from your LAN.
+Builds a custom lightweight Chromium remote UI for ARM64/aarch64. It uses:
+
+```text
+Chromium + Xvfb + Openbox + x11vnc + noVNC/websockify
+```
+
+This is intentionally smaller and simpler than the previous LinuxServer/Selkies browser image, which was too heavy on Raspberry Pi 3 / Nebra hardware and could repeatedly crash or stall.
 
 It starts Chromium with:
 
 ```text
---no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB https://flasher.meshcore.co.uk/
+--no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --no-first-run --start-maximized --window-size=1024,768 --ozone-platform=x11 https://flasher.meshcore.co.uk/
 ```
 
 The service is privileged and uses Balena sysfs/procfs/kernel-module labels so it can see host USB and serial devices where BalenaOS permits it.
 
-`START_DOCKER=false` is set because this image can try to start Docker-in-Docker helpers when running privileged. This project only needs Chromium and USB access, not BuildKit or nested Docker.
-
-The LinuxServer Chromium image may also expose HTTP on port 3000, but this project maps only the primary HTTPS endpoint:
+The custom noVNC endpoint is exposed over HTTPS:
 
 ```text
 https://<device-ip>:3001/
 ```
+
+The noVNC session uses the `PASSWORD` value from `docker-compose.yml`. VNC authentication commonly uses only the first 8 password characters, so the default is `changeme`. Change it before deployment.
 
 `shm_size: "1gb"` is included to make Chromium more stable. If a specific Balena builder or Compose parser rejects `shm_size`, remove that line and redeploy.
 
@@ -55,12 +61,13 @@ For Raspberry Pi 3 class hardware, the Chromium service is intentionally tuned f
 
 ```text
 1024x768 resolution
-8 FPS
-JPEG stream
-clipboard/audio/microphone/gamepad/file-transfer disabled
+16-bit Xvfb display
+minimal Openbox window manager
+local x11vnc only, proxied through websockify/noVNC
+no Selkies, gamepad interposer, nested Docker, audio, microphone, or clipboard sync
 ```
 
-This reduces CPU load and avoids repeated Selkies clipboard timeout logs. If the UI is still too slow, use `serial-tools` and `esptool.py` as the reliable fallback path.
+If the UI is still too slow, use `serial-tools` and `esptool.py` as the reliable fallback path.
 
 ### serial-tools
 
@@ -177,7 +184,7 @@ Security rules:
 
 1. Do not expose ports `3001` or `7681` to the internet.
 2. Use this only on a trusted LAN or VPN.
-3. Change `PASSWORD=change_me` in `docker-compose.yml` before deployment.
+3. Change `PASSWORD=changeme` in `docker-compose.yml` before deployment.
 4. Treat the ttyd terminal as shell access to a privileged container.
 
 ## Troubleshooting
@@ -228,63 +235,23 @@ If `lsusb` does not change when you plug the Heltec in, try another cable. Many 
 
 Some ESP32-S3 boards need BOOT held while pressing RESET, or similar timing, before flashing. Follow the Heltec or MeshCore firmware instructions for the exact button sequence.
 
-### Raspberry Pi 3 may be slow with Chromium/noVNC
+### Raspberry Pi 3 may still be slow with Chromium/noVNC
 
-The Raspberry Pi 3 Compute Module class hardware is limited for remote Chromium/noVNC/Selkies workloads. This project lowers the Chromium remote desktop load with:
+The Raspberry Pi 3 Compute Module class hardware is limited for remote Chromium workloads. This project uses a lighter custom stack:
 
-```yaml
-SELKIES_MANUAL_WIDTH: 1024
-SELKIES_MANUAL_HEIGHT: 768
-SELKIES_FRAMERATE: 8
-SELKIES_ENCODER: jpeg
-SELKIES_CLIPBOARD_ENABLED: false
-SELKIES_AUDIO_ENABLED: false
+```text
+Xvfb + Openbox + x11vnc + noVNC/websockify
 ```
 
 If it is still almost unusable, the hardware is likely the bottleneck. Use the web terminal at `http://<device-ip>:7681/` and flash with `esptool.py` instead.
-
-### Selkies clipboard timeout logs
-
-Logs like this usually come from clipboard synchronization taking too long on slow hardware:
-
-```text
-selkies/input_handler.py read_clipboard
-asyncio.exceptions.CancelledError
-TimeoutError
-```
-
-The compose file disables clipboard sync with:
-
-```yaml
-SELKIES_CLIPBOARD_ENABLED: false
-```
-
-Redeploy the project after this change. If the old behavior persists, remove the persistent `chromium-config` volume or recreate the Balena release so the browser container starts from a clean config.
-
-### BuildKit or Docker-in-Docker errors in chromium-flasher logs
-
-Logs like this mean the LinuxServer/Selkies image is trying to initialize nested Docker helpers inside the privileged container:
-
-```text
-error initializing buildkit
-error creating buildkit instance
-could not get initial namespace
-```
-
-This project disables that with:
-
-```yaml
-START_DOCKER: false
-```
-
-Nested Docker/BuildKit is not needed for WebSerial/WebUSB flashing.
 
 ### Architecture mismatch: arm64 vs armv7/armhf
 
 This project targets ARM64/aarch64:
 
 ```yaml
-image: lscr.io/linuxserver/chromium:arm64v8-latest
+build:
+  context: ./chromium-flasher
 ```
 
 and:
@@ -295,9 +262,10 @@ FROM balenalib/raspberrypi3-64-debian:bookworm-run
 
 If your BalenaOS application is 32-bit ARM instead, adapt both service images:
 
-1. Replace the Chromium image with a compatible 32-bit ARM variant if LinuxServer publishes one for your target, or build a custom Chromium container.
+1. Replace the `chromium-flasher` base image with a matching Balena base, for example a `raspberrypi3-debian` / armv7 variant.
 2. Replace the serial-tools base image with a matching Balena base, for example a `raspberrypi3-debian` / armv7 variant.
-3. In `serial-tools/Dockerfile`, replace the `ttyd.aarch64` download with the matching upstream asset, usually `ttyd.armhf` for armhf or `ttyd.arm` where appropriate.
-4. Rebuild the Balena release for the correct device type.
+3. Confirm Debian provides a compatible `chromium` package for that architecture.
+4. In `serial-tools/Dockerfile`, replace the `ttyd.aarch64` download with the matching upstream asset, usually `ttyd.armhf` for armhf or `ttyd.arm` where appropriate.
+5. Rebuild the Balena release for the correct device type.
 
 If deploy fails with an architecture error, confirm the Balena application device type and whether the OS image is 64-bit or 32-bit.
