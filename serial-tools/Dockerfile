@@ -1,6 +1,7 @@
 FROM balenalib/raspberrypi3-64-debian:bookworm-run
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TTYD_VERSION=1.7.7
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -11,9 +12,12 @@ RUN apt-get update \
         picocom \
         python3 \
         python3-pip \
-        ttyd \
         usbutils \
         wget \
+    && curl -fsSL \
+        "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/ttyd.aarch64" \
+        -o /usr/local/bin/ttyd \
+    && chmod +x /usr/local/bin/ttyd \
     && python3 -m pip install --no-cache-dir --break-system-packages \
         esptool \
         pyserial \

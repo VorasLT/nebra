@@ -57,6 +57,8 @@ Builds a small ARM64 diagnostic container with:
 python3 python3-pip usbutils picocom minicom ca-certificates curl wget bash ttyd
 ```
 
+`ttyd` is installed from the pinned upstream ARM64 release binary instead of `apt`, because some Debian/Balena package repositories do not provide a `ttyd` package for this base image.
+
 Python packages:
 
 ```text
@@ -235,6 +237,7 @@ If your BalenaOS application is 32-bit ARM instead, adapt both service images:
 
 1. Replace the Chromium image with a compatible 32-bit ARM variant if LinuxServer publishes one for your target, or build a custom Chromium container.
 2. Replace the serial-tools base image with a matching Balena base, for example a `raspberrypi3-debian` / armv7 variant.
-3. Rebuild the Balena release for the correct device type.
+3. In `serial-tools/Dockerfile`, replace the `ttyd.aarch64` download with the matching upstream asset, usually `ttyd.armhf` for armhf or `ttyd.arm` where appropriate.
+4. Rebuild the Balena release for the correct device type.
 
 If deploy fails with an architecture error, confirm the Balena application device type and whether the OS image is 64-bit or 32-bit.
