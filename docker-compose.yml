@@ -17,6 +17,24 @@ services:
       - PASSWORD=change_me
       - CHROME_CLI=--no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB https://flasher.meshcore.co.uk/
       - PIXELFLUX_WAYLAND=false
+      - NO_DECOR=true
+      - NO_GAMEPAD=true
+      - DISABLE_IPV6=true
+      - MAX_RES=1024x768
+      - SELKIES_MANUAL_WIDTH=1024
+      - SELKIES_MANUAL_HEIGHT=768
+      - SELKIES_FRAMERATE=8
+      - SELKIES_ENCODER=jpeg
+      - SELKIES_JPEG_QUALITY=45
+      - SELKIES_PAINT_OVER_JPEG_QUALITY=35
+      - SELKIES_AUDIO_ENABLED=false
+      - SELKIES_MICROPHONE_ENABLED=false
+      - SELKIES_GAMEPAD_ENABLED=false
+      - SELKIES_CLIPBOARD_ENABLED=false
+      - SELKIES_FILE_TRANSFERS=none
+      - SELKIES_SECOND_SCREEN=false
+      - SELKIES_USE_BROWSER_CURSORS=true
+      - SELKIES_USE_CSS_SCALING=true
     ports:
       - "3001:3001"
     volumes:

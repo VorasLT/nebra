@@ -49,6 +49,17 @@ https://<device-ip>:3001/
 
 `shm_size: "1gb"` is included to make Chromium more stable. If a specific Balena builder or Compose parser rejects `shm_size`, remove that line and redeploy.
 
+For Raspberry Pi 3 class hardware, the Chromium service is intentionally tuned for low load:
+
+```text
+1024x768 resolution
+8 FPS
+JPEG stream
+clipboard/audio/microphone/gamepad/file-transfer disabled
+```
+
+This reduces CPU load and avoids repeated Selkies clipboard timeout logs. If the UI is still too slow, use `serial-tools` and `esptool.py` as the reliable fallback path.
+
 ### serial-tools
 
 Builds a small ARM64 diagnostic container with:
@@ -217,7 +228,36 @@ Some ESP32-S3 boards need BOOT held while pressing RESET, or similar timing, bef
 
 ### Raspberry Pi 3 may be slow with Chromium/noVNC
 
-The Raspberry Pi 3 Compute Module class hardware is limited for remote Chromium/noVNC workloads. The UI may feel slow, but it should be adequate for opening the flasher and running a firmware flash.
+The Raspberry Pi 3 Compute Module class hardware is limited for remote Chromium/noVNC/Selkies workloads. This project lowers the Chromium remote desktop load with:
+
+```yaml
+SELKIES_MANUAL_WIDTH: 1024
+SELKIES_MANUAL_HEIGHT: 768
+SELKIES_FRAMERATE: 8
+SELKIES_ENCODER: jpeg
+SELKIES_CLIPBOARD_ENABLED: false
+SELKIES_AUDIO_ENABLED: false
+```
+
+If it is still almost unusable, the hardware is likely the bottleneck. Use the web terminal at `http://<device-ip>:7681/` and flash with `esptool.py` instead.
+
+### Selkies clipboard timeout logs
+
+Logs like this usually come from clipboard synchronization taking too long on slow hardware:
+
+```text
+selkies/input_handler.py read_clipboard
+asyncio.exceptions.CancelledError
+TimeoutError
+```
+
+The compose file disables clipboard sync with:
+
+```yaml
+SELKIES_CLIPBOARD_ENABLED: false
+```
+
+Redeploy the project after this change. If the old behavior persists, remove the persistent `chromium-config` volume or recreate the Balena release so the browser container starts from a clean config.
 
 ### Architecture mismatch: arm64 vs armv7/armhf
 
