@@ -15,6 +15,7 @@ services:
       - TZ=Europe/Vilnius
       - CUSTOM_USER=admin
       - PASSWORD=change_me
+      - START_DOCKER=false
       - CHROME_CLI=--no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB https://flasher.meshcore.co.uk/
       - PIXELFLUX_WAYLAND=false
       - NO_DECOR=true

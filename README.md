@@ -41,6 +41,8 @@ It starts Chromium with:
 
 The service is privileged and uses Balena sysfs/procfs/kernel-module labels so it can see host USB and serial devices where BalenaOS permits it.
 
+`START_DOCKER=false` is set because this image can try to start Docker-in-Docker helpers when running privileged. This project only needs Chromium and USB access, not BuildKit or nested Docker.
+
 The LinuxServer Chromium image may also expose HTTP on port 3000, but this project maps only the primary HTTPS endpoint:
 
 ```text
@@ -258,6 +260,24 @@ SELKIES_CLIPBOARD_ENABLED: false
 ```
 
 Redeploy the project after this change. If the old behavior persists, remove the persistent `chromium-config` volume or recreate the Balena release so the browser container starts from a clean config.
+
+### BuildKit or Docker-in-Docker errors in chromium-flasher logs
+
+Logs like this mean the LinuxServer/Selkies image is trying to initialize nested Docker helpers inside the privileged container:
+
+```text
+error initializing buildkit
+error creating buildkit instance
+could not get initial namespace
+```
+
+This project disables that with:
+
+```yaml
+START_DOCKER: false
+```
+
+Nested Docker/BuildKit is not needed for WebSerial/WebUSB flashing.
 
 ### Architecture mismatch: arm64 vs armv7/armhf
 
