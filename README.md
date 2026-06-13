@@ -1,5 +1,7 @@
 # Balena MeshCore Browser Flasher
 
+[![Deploy with balena](https://www.balena.io/deploy.png)](https://dashboard.balena-cloud.com/deploy?repoUrl=https://github.com/VorasLT/nebra)
+
 Clean BalenaOS multi-container project for one job: run a LAN-accessible Chromium browser on a Balena device so a USB-connected Heltec V3 / ESP32-S3 MeshCore device can be flashed through WebSerial/WebUSB.
 
 This project intentionally does not include any old Nebra miner, Helium, packet-forwarder, diagnostics, gatewayrs, or gateway services.
