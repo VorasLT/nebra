@@ -7,6 +7,7 @@ RUN apt-get update \
         bash \
         ca-certificates \
         chromium \
+        dbus \
         dbus-x11 \
         fonts-dejavu-core \
         fonts-liberation \

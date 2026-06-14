@@ -278,6 +278,17 @@ DevToolsActivePort
 
 If the error still appears, restart the `chromium-flasher` service from the Balena Dashboard. As a last resort, remove the `chromium-config` volume to force a clean Chromium profile.
 
+### DBus socket log lines
+
+Chromium may log DBus errors in small containers:
+
+```text
+Failed to connect to socket /run/dbus/system_bus_socket
+Could not parse server address
+```
+
+The custom `chromium-flasher` startup script now starts a minimal DBus system bus and session bus before Chromium. Occasional DBus warnings are usually not fatal, but repeated DBus setup failures can make Chromium noisier and less predictable.
+
 ### Architecture mismatch: arm64 vs armv7/armhf
 
 This project targets ARM64/aarch64:

@@ -14,6 +14,15 @@ CHROME_CLI="${CHROME_CLI:---no-sandbox --no-zygote --single-process --renderer-p
 mkdir -p /config/chromium /config/certs "${XDG_RUNTIME_DIR}"
 chmod 700 "${XDG_RUNTIME_DIR}"
 
+mkdir -p /run/dbus
+if [ ! -S /run/dbus/system_bus_socket ]; then
+    dbus-daemon --system --fork >/tmp/dbus-system.log 2>&1 || true
+fi
+
+if command -v dbus-launch >/dev/null 2>&1; then
+    eval "$(dbus-launch --sh-syntax)"
+fi
+
 rm -f \
     /config/chromium/SingletonCookie \
     /config/chromium/SingletonLock \
