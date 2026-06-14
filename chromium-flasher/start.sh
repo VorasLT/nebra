@@ -9,7 +9,7 @@ DISPLAY_HEIGHT="${DISPLAY_HEIGHT:-768}"
 DISPLAY_DEPTH="${DISPLAY_DEPTH:-16}"
 PASSWORD="${PASSWORD:-changeme}"
 START_URL="${START_URL:-https://flasher.meshcore.co.uk/}"
-CHROME_CLI="${CHROME_CLI:---no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --no-first-run --start-maximized --window-size=${DISPLAY_WIDTH},${DISPLAY_HEIGHT} --ozone-platform=x11 ${START_URL}}"
+CHROME_CLI="${CHROME_CLI:---no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AutofillServerCommunication,InterestFeedContentSuggestions --no-first-run --start-maximized --window-size=${DISPLAY_WIDTH},${DISPLAY_HEIGHT} --ozone-platform=x11 ${START_URL}}"
 
 mkdir -p /config/chromium /config/certs "${XDG_RUNTIME_DIR}"
 chmod 700 "${XDG_RUNTIME_DIR}"

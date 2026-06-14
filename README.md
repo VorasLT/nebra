@@ -42,7 +42,7 @@ This is intentionally smaller and simpler than the previous LinuxServer/Selkies 
 It starts Chromium with:
 
 ```text
---no-sandbox --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --no-first-run --start-maximized --window-size=1024,768 --ozone-platform=x11 https://flasher.meshcore.co.uk/
+--no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --no-first-run --start-maximized --window-size=1024,768 --ozone-platform=x11 https://flasher.meshcore.co.uk/
 ```
 
 The service is privileged and uses Balena sysfs/procfs/kernel-module labels so it can see host USB and serial devices where BalenaOS permits it.
@@ -65,6 +65,7 @@ For Raspberry Pi 3 class hardware, the Chromium service is intentionally tuned f
 minimal Openbox window manager
 local x11vnc only, proxied through websockify/noVNC
 no Selkies, gamepad interposer, nested Docker, audio, microphone, or clipboard sync
+Chromium single-process/no-zygote mode to reduce renderer process churn
 ```
 
 If the UI is still too slow, use `serial-tools` and `esptool.py` as the reliable fallback path.
@@ -243,7 +244,19 @@ The Raspberry Pi 3 Compute Module class hardware is limited for remote Chromium 
 Xvfb + Openbox + x11vnc + noVNC/websockify
 ```
 
+It also runs Chromium with `--single-process`, `--no-zygote`, and `--renderer-process-limit=1`. This is less elegant than normal Chromium process isolation, but it reduces process churn and memory pressure on very small hardware.
+
 If it is still almost unusable, the hardware is likely the bottleneck. Use the web terminal at `http://<device-ip>:7681/` and flash with `esptool.py` instead.
+
+### Chromium OOM score log lines
+
+Logs like this usually mean a Chromium renderer process exited before Chromium could adjust its Linux OOM score:
+
+```text
+Failed to adjust OOM score of renderer with pid ...: No such file or directory
+```
+
+The project reduces this by running Chromium in single-process/no-zygote mode. If the web UI still crashes, the device is probably running out of CPU or RAM for remote Chromium, and `serial-tools` with `esptool.py` is the more reliable fallback.
 
 ### Architecture mismatch: arm64 vs armv7/armhf
 
