@@ -258,6 +258,26 @@ Failed to adjust OOM score of renderer with pid ...: No such file or directory
 
 The project reduces this by running Chromium in single-process/no-zygote mode. If the web UI still crashes, the device is probably running out of CPU or RAM for remote Chromium, and `serial-tools` with `esptool.py` is the more reliable fallback.
 
+### Chromium profile appears to be in use
+
+If Chromium crashes, the persistent `/config/chromium` profile can keep stale lock files:
+
+```text
+The profile appears to be in use by another Chromium process
+Chromium has locked the profile
+```
+
+The startup script removes these stale files before launching Chromium:
+
+```text
+SingletonCookie
+SingletonLock
+SingletonSocket
+DevToolsActivePort
+```
+
+If the error still appears, restart the `chromium-flasher` service from the Balena Dashboard. As a last resort, remove the `chromium-config` volume to force a clean Chromium profile.
+
 ### Architecture mismatch: arm64 vs armv7/armhf
 
 This project targets ARM64/aarch64:

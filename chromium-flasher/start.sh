@@ -14,6 +14,12 @@ CHROME_CLI="${CHROME_CLI:---no-sandbox --no-zygote --single-process --renderer-p
 mkdir -p /config/chromium /config/certs "${XDG_RUNTIME_DIR}"
 chmod 700 "${XDG_RUNTIME_DIR}"
 
+rm -f \
+    /config/chromium/SingletonCookie \
+    /config/chromium/SingletonLock \
+    /config/chromium/SingletonSocket \
+    /config/chromium/DevToolsActivePort
+
 CERT_FILE="/config/certs/novnc.pem"
 if [ ! -s "${CERT_FILE}" ]; then
     openssl req \
