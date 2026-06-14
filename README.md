@@ -39,11 +39,13 @@ Chromium + Xvfb + Openbox + x11vnc + noVNC/websockify
 
 This is intentionally smaller and simpler than the previous LinuxServer/Selkies browser image, which was too heavy on Raspberry Pi 3 / Nebra hardware and could repeatedly crash or stall.
 
-It starts Chromium with:
+It starts Chromium with a blank page. After the remote browser UI has loaded, manually open:
 
 ```text
---no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --no-first-run --start-maximized --window-size=1024,768 --ozone-platform=x11 https://flasher.meshcore.co.uk/
+https://flasher.meshcore.co.uk/
 ```
+
+The startup command keeps WebSerial/WebUSB enabled but uses `about:blank` as the initial page.
 
 The service is privileged and uses Balena sysfs/procfs/kernel-module labels so it can see host USB and serial devices where BalenaOS permits it.
 
@@ -122,7 +124,7 @@ This project is intended for Raspberry Pi 3 Compute Module / Nebra Indoor Miner 
 5. Run `esptool.py --port /dev/ttyUSB0 chip_id`.
 6. If needed, try `/dev/ttyACM0` instead.
 7. Open Chromium web UI.
-8. Open MeshCore flasher.
+8. Manually open `https://flasher.meshcore.co.uk/`.
 9. Try Connect/Flash.
 
 ## Serial test commands
@@ -288,6 +290,23 @@ Could not parse server address
 ```
 
 The custom `chromium-flasher` startup script now starts a minimal DBus system bus and session bus before Chromium. Occasional DBus warnings are usually not fatal, but repeated DBus setup failures can make Chromium noisier and less predictable.
+
+The session bus is started with an explicit address:
+
+```text
+unix:path=/tmp/dbus-session-bus
+```
+
+### GCM quota exceeded log lines
+
+Chromium may try to initialize Google Cloud Messaging or push notification internals even when this project only needs one flasher page:
+
+```text
+google_apis/gcm/engine/registration_request.cc
+Registration response error message: QUOTA_EXCEEDED
+```
+
+The startup script removes stale Chromium GCM profile state, and Chromium starts with push/GCM/background Google services disabled. These log lines are not directly related to WebSerial/WebUSB.
 
 ### Architecture mismatch: arm64 vs armv7/armhf
 

@@ -18,8 +18,8 @@ services:
       - DISPLAY_WIDTH=1024
       - DISPLAY_HEIGHT=768
       - DISPLAY_DEPTH=16
-      - START_URL=https://flasher.meshcore.co.uk/
-      - CHROME_CLI=--no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AutofillServerCommunication,InterestFeedContentSuggestions --no-first-run --start-maximized --window-size=1024,768 --ozone-platform=x11 https://flasher.meshcore.co.uk/
+      - START_URL=about:blank
+      - CHROME_CLI=--no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-push-messaging --disable-gcm --disable-domain-reliability --disable-client-side-phishing-detection --disable-crash-reporter --disable-breakpad --metrics-recording-only --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AutofillServerCommunication,InterestFeedContentSuggestions,PushMessaging,NotificationTriggers --no-first-run --start-maximized --window-size=1024,768 --ozone-platform=x11 about:blank
     ports:
       - "3001:3001"
     volumes:

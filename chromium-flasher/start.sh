@@ -8,8 +8,8 @@ DISPLAY_WIDTH="${DISPLAY_WIDTH:-1024}"
 DISPLAY_HEIGHT="${DISPLAY_HEIGHT:-768}"
 DISPLAY_DEPTH="${DISPLAY_DEPTH:-16}"
 PASSWORD="${PASSWORD:-changeme}"
-START_URL="${START_URL:-https://flasher.meshcore.co.uk/}"
-CHROME_CLI="${CHROME_CLI:---no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AutofillServerCommunication,InterestFeedContentSuggestions --no-first-run --start-maximized --window-size=${DISPLAY_WIDTH},${DISPLAY_HEIGHT} --ozone-platform=x11 ${START_URL}}"
+START_URL="${START_URL:-about:blank}"
+CHROME_CLI="${CHROME_CLI:---no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-push-messaging --disable-gcm --disable-domain-reliability --disable-client-side-phishing-detection --disable-crash-reporter --disable-breakpad --metrics-recording-only --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AutofillServerCommunication,InterestFeedContentSuggestions,PushMessaging,NotificationTriggers --no-first-run --start-maximized --window-size=${DISPLAY_WIDTH},${DISPLAY_HEIGHT} --ozone-platform=x11 ${START_URL}}"
 
 mkdir -p /config/chromium /config/certs "${XDG_RUNTIME_DIR}"
 chmod 700 "${XDG_RUNTIME_DIR}"
@@ -19,8 +19,13 @@ if [ ! -S /run/dbus/system_bus_socket ]; then
     dbus-daemon --system --fork >/tmp/dbus-system.log 2>&1 || true
 fi
 
-if command -v dbus-launch >/dev/null 2>&1; then
-    eval "$(dbus-launch --sh-syntax)"
+export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/tmp/dbus-session-bus}"
+if [ ! -S /tmp/dbus-session-bus ]; then
+    dbus-daemon \
+        --session \
+        --fork \
+        --address="${DBUS_SESSION_BUS_ADDRESS}" \
+        >/tmp/dbus-session.log 2>&1 || true
 fi
 
 rm -f \
@@ -28,6 +33,10 @@ rm -f \
     /config/chromium/SingletonLock \
     /config/chromium/SingletonSocket \
     /config/chromium/DevToolsActivePort
+
+rm -rf \
+    "/config/chromium/Default/GCM Store" \
+    "/config/chromium/GCM Store"
 
 CERT_FILE="/config/certs/novnc.pem"
 if [ ! -s "${CERT_FILE}" ]; then
