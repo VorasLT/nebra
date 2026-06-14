@@ -14,12 +14,14 @@ CHROME_CLI="${CHROME_CLI:---no-sandbox --no-zygote --single-process --renderer-p
 mkdir -p /config/chromium /config/certs "${XDG_RUNTIME_DIR}"
 chmod 700 "${XDG_RUNTIME_DIR}"
 
+DISPLAY_NUM="${DISPLAY#:}"
+
 mkdir -p /run/dbus
-if [ ! -S /run/dbus/system_bus_socket ]; then
-    dbus-daemon --system --fork >/tmp/dbus-system.log 2>&1 || true
-fi
+rm -f /run/dbus/pid /run/dbus/system_bus_socket
+dbus-daemon --system --fork --nopidfile >/tmp/dbus-system.log 2>&1 || true
 
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/tmp/dbus-session-bus}"
+rm -f /tmp/dbus-session-bus
 if [ ! -S /tmp/dbus-session-bus ]; then
     dbus-daemon \
         --session \
@@ -37,6 +39,10 @@ rm -f \
 rm -rf \
     "/config/chromium/Default/GCM Store" \
     "/config/chromium/GCM Store"
+
+mkdir -p /tmp/.X11-unix
+chmod 1777 /tmp/.X11-unix
+rm -f "/tmp/.X${DISPLAY_NUM}-lock" "/tmp/.X11-unix/X${DISPLAY_NUM}"
 
 CERT_FILE="/config/certs/novnc.pem"
 if [ ! -s "${CERT_FILE}" ]; then
@@ -58,7 +64,25 @@ Xvfb "${DISPLAY}" \
     -ac &
 XVFB_PID=$!
 
-sleep 1
+for _ in $(seq 1 40); do
+    if xdpyinfo -display "${DISPLAY}" >/tmp/xdpyinfo.log 2>&1; then
+        break
+    fi
+
+    if ! kill -0 "${XVFB_PID}" 2>/dev/null; then
+        echo "Xvfb exited before display ${DISPLAY} became available" >&2
+        cat /tmp/xdpyinfo.log >&2 || true
+        exit 1
+    fi
+
+    sleep 0.25
+done
+
+if ! xdpyinfo -display "${DISPLAY}" >/tmp/xdpyinfo.log 2>&1; then
+    echo "Timed out waiting for X display ${DISPLAY}" >&2
+    cat /tmp/xdpyinfo.log >&2 || true
+    exit 1
+fi
 
 openbox >/tmp/openbox.log 2>&1 &
 OPENBOX_PID=$!

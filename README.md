@@ -308,6 +308,17 @@ Registration response error message: QUOTA_EXCEEDED
 
 The startup script removes stale Chromium GCM profile state, and Chromium starts with push/GCM/background Google services disabled. These log lines are not directly related to WebSerial/WebUSB.
 
+### Missing X server or DISPLAY
+
+If Chromium exits with:
+
+```text
+Missing X server or $DISPLAY
+The platform failed to initialize
+```
+
+the browser started before the virtual X server was ready, or a stale X lock file was left behind after a crash. The startup script now removes stale X lock files, starts Xvfb, and waits for `xdpyinfo` to confirm the display is available before launching Chromium.
+
 ### Architecture mismatch: arm64 vs armv7/armhf
 
 This project targets ARM64/aarch64:

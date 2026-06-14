@@ -19,6 +19,7 @@ RUN apt-get update \
         wget \
         x11vnc \
         xauth \
+        x11-utils \
         xvfb \
     && mkdir -p /config /opt/chromium-flasher \
     && printf '%s\n' \
