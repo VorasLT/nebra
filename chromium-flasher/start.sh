@@ -9,7 +9,7 @@ DISPLAY_HEIGHT="${DISPLAY_HEIGHT:-768}"
 DISPLAY_DEPTH="${DISPLAY_DEPTH:-16}"
 PASSWORD="${PASSWORD:-changeme}"
 START_URL="${START_URL:-about:blank}"
-CHROME_CLI="${CHROME_CLI:---no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-push-messaging --disable-gcm --disable-domain-reliability --disable-client-side-phishing-detection --disable-crash-reporter --disable-breakpad --metrics-recording-only --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AutofillServerCommunication,InterestFeedContentSuggestions,PushMessaging,NotificationTriggers --no-first-run --start-maximized --window-size=${DISPLAY_WIDTH},${DISPLAY_HEIGHT} --ozone-platform=x11 ${START_URL}}"
+CHROME_CLI="${CHROME_CLI:---no-sandbox --no-zygote --single-process --renderer-process-limit=1 --process-per-site --disable-site-isolation-trials --disable-dev-shm-usage --enable-features=WebSerial,WebUSB --disable-gpu --disable-software-rasterizer --no-proxy-server --proxy-server=direct:// --proxy-bypass-list=* --disable-background-networking --disable-sync --disable-extensions --disable-component-update --disable-default-apps --disable-popup-blocking --disable-translate --disable-notifications --disable-push-messaging --disable-gcm --disable-domain-reliability --disable-client-side-phishing-detection --disable-crash-reporter --disable-breakpad --metrics-recording-only --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AutofillServerCommunication,InterestFeedContentSuggestions,PushMessaging,NotificationTriggers,BatteryStatus --no-first-run --start-maximized --window-size=${DISPLAY_WIDTH},${DISPLAY_HEIGHT} --ozone-platform=x11 ${START_URL}}"
 
 mkdir -p /config/chromium /config/certs "${XDG_RUNTIME_DIR}"
 chmod 700 "${XDG_RUNTIME_DIR}"
@@ -39,6 +39,16 @@ rm -f \
 rm -rf \
     "/config/chromium/Default/GCM Store" \
     "/config/chromium/GCM Store"
+
+for host in \
+    mtalk.google.com \
+    android.clients.google.com \
+    fcmregistrations.googleapis.com \
+    firebaseinstallations.googleapis.com; do
+    if ! grep -q "[[:space:]]${host}$" /etc/hosts; then
+        printf '0.0.0.0 %s\n' "${host}" >> /etc/hosts
+    fi
+done
 
 mkdir -p /tmp/.X11-unix
 chmod 1777 /tmp/.X11-unix

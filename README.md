@@ -322,6 +322,23 @@ Registration response error message: QUOTA_EXCEEDED
 
 The startup script removes stale Chromium GCM profile state, and Chromium starts with push/GCM/background Google services disabled. These log lines are not directly related to WebSerial/WebUSB.
 
+To reduce repeated GCM retries, the container also maps these push-notification endpoints to `0.0.0.0` in `/etc/hosts`:
+
+```text
+mtalk.google.com
+android.clients.google.com
+fcmregistrations.googleapis.com
+firebaseinstallations.googleapis.com
+```
+
+The Chromium command also uses direct proxy mode:
+
+```text
+--no-proxy-server --proxy-server=direct:// --proxy-bypass-list=*
+```
+
+This avoids the V8 proxy resolver warning that appears when Chromium is forced into `--single-process` mode.
+
 ### Missing X server or DISPLAY
 
 If Chromium exits with:
