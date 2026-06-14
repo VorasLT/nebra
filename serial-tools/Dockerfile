@@ -21,6 +21,9 @@ RUN apt-get update \
     && python3 -m pip install --no-cache-dir --break-system-packages \
         esptool \
         pyserial \
+        pytap2 \
+        meshtastic \
+        meshcore-cli \
     && mkdir -p /data \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

@@ -85,8 +85,10 @@ python3 python3-pip usbutils picocom minicom ca-certificates curl wget bash ttyd
 Python packages:
 
 ```text
-esptool pyserial
+esptool pyserial pytap2 meshtastic meshcore-cli
 ```
+
+`meshcore-cli` provides the `meshcore-cli` and `meshcli` commands.
 
 The terminal runs through ttyd:
 
@@ -160,6 +162,18 @@ picocom -b 115200 /dev/ttyUSB0
 ```
 
 Exit `picocom` with `Ctrl+A`, then `Ctrl+X`.
+
+List MeshCore-compatible interfaces with `meshcore-cli`:
+
+```bash
+meshcore-cli -l
+```
+
+Connect to a MeshCore device over serial:
+
+```bash
+meshcore-cli -s /dev/ttyUSB0
+```
 
 ## Fallback flashing with esptool
 
